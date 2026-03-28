@@ -22,33 +22,105 @@ export const sanitizeName = s => s.toLowerCase()
   .replace(RX.MULTI, '_')
   .replace(RX.TRIM, '')
 
-// Map of country names (formatted) to ISO 3166-1 alpha-2 codes for flag emojis
+// Comprehensive ISO 3166-1 alpha-2 country code mapping for ALL countries worldwide
+// This ensures any country that NordVPN adds in the future will automatically display flags
 const countryCodeMap = {
-  'Albania': 'AL', 'Argentina': 'AR', 'Australia': 'AU', 'Austria': 'AT',
-  'Belgium': 'BE', 'Bosnia And Herzegovina': 'BA', 'Brazil': 'BR', 'Bulgaria': 'BG',
-  'Canada': 'CA', 'Chile': 'CL', 'Colombia': 'CO', 'Costa Rica': 'CR', 'Croatia': 'HR', 'Cyprus': 'CY', 'Czech Republic': 'CZ',
-  'Denmark': 'DK',
-  'Egypt': 'EG', 'Estonia': 'EE',
-  'Finland': 'FI', 'France': 'FR',
-  'Georgia': 'GE', 'Germany': 'DE', 'Greece': 'GR',
-  'Hong Kong': 'HK', 'Hungary': 'HU',
-  'Iceland': 'IS', 'India': 'IN', 'Indonesia': 'ID', 'Ireland': 'IE', 'Israel': 'IL', 'Italy': 'IT',
-  'Japan': 'JP',
-  'Latvia': 'LV', 'Lithuania': 'LT', 'Luxembourg': 'LU',
-  'Malaysia': 'MY', 'Mexico': 'MX', 'Moldova': 'MD', 'Morocco': 'MA',
-  'Netherlands': 'NL', 'New Zealand': 'NZ', 'North Macedonia': 'MK', 'Norway': 'NO',
-  'Pakistan': 'PK', 'Philippines': 'PH', 'Poland': 'PL', 'Portugal': 'PT',
-  'Romania': 'RO',
-  'Serbia': 'RS', 'Singapore': 'SG', 'Slovakia': 'SK', 'Slovenia': 'SI', 'South Africa': 'ZA', 'South Korea': 'KR', 'Spain': 'ES', 'Sweden': 'SE', 'Switzerland': 'CH',
-  'Taiwan': 'TW', 'Thailand': 'TH', 'Turkey': 'TR',
-  'Ukraine': 'UA', 'United Arab Emirates': 'AE', 'United Kingdom': 'GB', 'United States': 'US',
-  'Vietnam': 'VN'
+  // A
+  'Afghanistan': 'AF', 'Albania': 'AL', 'Algeria': 'DZ', 'Andorra': 'AD', 'Angola': 'AO',
+  'Antigua And Barbuda': 'AG', 'Argentina': 'AR', 'Armenia': 'AM', 'Australia': 'AU', 'Austria': 'AT', 'Azerbaijan': 'AZ',
+  // B
+  'Bahamas': 'BS', 'Bahrain': 'BH', 'Bangladesh': 'BD', 'Barbados': 'BB', 'Belarus': 'BY',
+  'Belgium': 'BE', 'Belize': 'BZ', 'Benin': 'BJ', 'Bhutan': 'BT', 'Bolivia': 'BO',
+  'Bosnia And Herzegovina': 'BA', 'Botswana': 'BW', 'Brazil': 'BR', 'Brunei': 'BN', 'Bulgaria': 'BG',
+  'Burkina Faso': 'BF', 'Burundi': 'BI',
+  // C
+  'Cambodia': 'KH', 'Cameroon': 'CM', 'Canada': 'CA', 'Cape Verde': 'CV',
+  'Central African Republic': 'CF', 'Chad': 'TD', 'Chile': 'CL', 'China': 'CN', 'Colombia': 'CO',
+  'Comoros': 'KM', 'Congo': 'CG', 'Costa Rica': 'CR', 'Croatia': 'HR', 'Cuba': 'CU',
+  'Cyprus': 'CY', 'Czech Republic': 'CZ', 'Czechia': 'CZ',
+  // D
+  'Democratic Republic Of The Congo': 'CD', 'Denmark': 'DK', 'Djibouti': 'DJ', 'Dominica': 'DM', 'Dominican Republic': 'DO',
+  // E
+  'East Timor': 'TL', 'Ecuador': 'EC', 'Egypt': 'EG', 'El Salvador': 'SV',
+  'Equatorial Guinea': 'GQ', 'Eritrea': 'ER', 'Estonia': 'EE', 'Ethiopia': 'ET', 'Eswatini': 'SZ',
+  // F
+  'Fiji': 'FJ', 'Finland': 'FI', 'France': 'FR',
+  // G
+  'Gabon': 'GA', 'Gambia': 'GM', 'Georgia': 'GE', 'Germany': 'DE', 'Ghana': 'GH',
+  'Greece': 'GR', 'Grenada': 'GD', 'Guatemala': 'GT', 'Guinea': 'GN', 'Guinea-Bissau': 'GW', 'Guyana': 'GY',
+  // H
+  'Haiti': 'HT', 'Honduras': 'HN', 'Hong Kong': 'HK', 'Hungary': 'HU',
+  // I
+  'Iceland': 'IS', 'India': 'IN', 'Indonesia': 'ID', 'Iran': 'IR', 'Iraq': 'IQ',
+  'Ireland': 'IE', 'Israel': 'IL', 'Italy': 'IT', 'Ivory Coast': 'CI',
+  // J
+  'Jamaica': 'JM', 'Japan': 'JP', 'Jordan': 'JO',
+  // K
+  'Kazakhstan': 'KZ', 'Kenya': 'KE', 'Kiribati': 'KI', 'Kosovo': 'XK', 'Kuwait': 'KW', 'Kyrgyzstan': 'KG',
+  // L
+  'Laos': 'LA', 'Latvia': 'LV', 'Lebanon': 'LB', 'Lesotho': 'LS', 'Liberia': 'LR',
+  'Libya': 'LY', 'Liechtenstein': 'LI', 'Lithuania': 'LT', 'Luxembourg': 'LU',
+  // M
+  'Macao': 'MO', 'Madagascar': 'MG', 'Malawi': 'MW', 'Malaysia': 'MY', 'Maldives': 'MV',
+  'Mali': 'ML', 'Malta': 'MT', 'Marshall Islands': 'MH', 'Mauritania': 'MR', 'Mauritius': 'MU',
+  'Mexico': 'MX', 'Micronesia': 'FM', 'Moldova': 'MD', 'Monaco': 'MC', 'Mongolia': 'MN',
+  'Montenegro': 'ME', 'Morocco': 'MA', 'Mozambique': 'MZ', 'Myanmar': 'MM',
+  // N
+  'Namibia': 'NA', 'Nauru': 'NR', 'Nepal': 'NP', 'Netherlands': 'NL', 'New Zealand': 'NZ',
+  'Nicaragua': 'NI', 'Niger': 'NE', 'Nigeria': 'NG', 'North Korea': 'KP', 'North Macedonia': 'MK', 'Norway': 'NO',
+  // O
+  'Oman': 'OM',
+  // P
+  'Pakistan': 'PK', 'Palau': 'PW', 'Palestine': 'PS', 'Panama': 'PA', 'Papua New Guinea': 'PG',
+  'Paraguay': 'PY', 'Peru': 'PE', 'Philippines': 'PH', 'Poland': 'PL', 'Portugal': 'PT',
+  // Q
+  'Qatar': 'QA',
+  // R
+  'Romania': 'RO', 'Russia': 'RU', 'Rwanda': 'RW',
+  // S
+  'Saint Kitts And Nevis': 'KN', 'Saint Lucia': 'LC', 'Saint Vincent And The Grenadines': 'VC',
+  'Samoa': 'WS', 'San Marino': 'SM', 'Sao Tome And Principe': 'ST', 'Saudi Arabia': 'SA',
+  'Senegal': 'SN', 'Serbia': 'RS', 'Seychelles': 'SC', 'Sierra Leone': 'SL', 'Singapore': 'SG',
+  'Slovakia': 'SK', 'Slovenia': 'SI', 'Solomon Islands': 'SB', 'Somalia': 'SO', 'South Africa': 'ZA',
+  'South Korea': 'KR', 'South Sudan': 'SS', 'Spain': 'ES', 'Sri Lanka': 'LK', 'Sudan': 'SD',
+  'Suriname': 'SR', 'Sweden': 'SE', 'Switzerland': 'CH', 'Syria': 'SY',
+  // T
+  'Taiwan': 'TW', 'Tajikistan': 'TJ', 'Tanzania': 'TZ', 'Thailand': 'TH', 'Timor-Leste': 'TL',
+  'Togo': 'TG', 'Tonga': 'TO', 'Trinidad And Tobago': 'TT', 'Tunisia': 'TN', 'Turkey': 'TR',
+  'Turkmenistan': 'TM', 'Tuvalu': 'TV',
+  // U
+  'Uganda': 'UG', 'Ukraine': 'UA', 'United Arab Emirates': 'AE', 'United Kingdom': 'GB', 'United States': 'US',
+  'Uruguay': 'UY', 'Uzbekistan': 'UZ',
+  // V
+  'Vanuatu': 'VU', 'Vatican City': 'VA', 'Venezuela': 'VE', 'Vietnam': 'VN',
+  // Y
+  'Yemen': 'YE',
+  // Z
+  'Zambia': 'ZM', 'Zimbabwe': 'ZW'
+}
+
+// Normalize country name for lookups (handles case, spacing, special characters)
+const normalizeCountryName = name => {
+  if (!name) return ''
+  // Convert to title case and normalize common variations
+  return name.trim()
+    .split(/\s+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+    .replace(/\bAnd\b/g, 'And')
+    .replace(/\bOf\b/g, 'Of')
+    .replace(/\bThe\b/g, 'The')
 }
 
 // Convert ISO 3166-1 alpha-2 country code to flag emoji
 export const getCountryFlag = countryName => {
-  const code = countryCodeMap[countryName]
-  if (!code) return ''
+  const normalized = normalizeCountryName(countryName)
+  const code = countryCodeMap[normalized]
+  if (!code) {
+    // If not found, log for debugging (can help identify missing mappings)
+    console.warn(`Country code not found for: "${countryName}" (normalized: "${normalized}")`)
+    return ''
+  }
   // Convert country code to flag emoji using regional indicator symbols
   return String.fromCodePoint(
     ...[...code].map(c => c.charCodeAt(0) + 127397)
