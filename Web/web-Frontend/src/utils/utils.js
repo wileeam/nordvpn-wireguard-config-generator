@@ -22,6 +22,39 @@ export const sanitizeName = s => s.toLowerCase()
   .replace(RX.MULTI, '_')
   .replace(RX.TRIM, '')
 
+// Map of country names (formatted) to ISO 3166-1 alpha-2 codes for flag emojis
+const countryCodeMap = {
+  'Albania': 'AL', 'Argentina': 'AR', 'Australia': 'AU', 'Austria': 'AT',
+  'Belgium': 'BE', 'Bosnia And Herzegovina': 'BA', 'Brazil': 'BR', 'Bulgaria': 'BG',
+  'Canada': 'CA', 'Chile': 'CL', 'Costa Rica': 'CR', 'Croatia': 'HR', 'Cyprus': 'CY', 'Czech Republic': 'CZ',
+  'Denmark': 'DK',
+  'Estonia': 'EE',
+  'Finland': 'FI', 'France': 'FR',
+  'Georgia': 'GE', 'Germany': 'DE', 'Greece': 'GR',
+  'Hong Kong': 'HK', 'Hungary': 'HU',
+  'Iceland': 'IS', 'India': 'IN', 'Indonesia': 'ID', 'Ireland': 'IE', 'Israel': 'IL', 'Italy': 'IT',
+  'Japan': 'JP',
+  'Latvia': 'LV', 'Lithuania': 'LT', 'Luxembourg': 'LU',
+  'Malaysia': 'MY', 'Mexico': 'MX', 'Moldova': 'MD',
+  'Netherlands': 'NL', 'New Zealand': 'NZ', 'North Macedonia': 'MK', 'Norway': 'NO',
+  'Poland': 'PL', 'Portugal': 'PT',
+  'Romania': 'RO',
+  'Serbia': 'RS', 'Singapore': 'SG', 'Slovakia': 'SK', 'Slovenia': 'SI', 'South Africa': 'ZA', 'South Korea': 'KR', 'Spain': 'ES', 'Sweden': 'SE', 'Switzerland': 'CH',
+  'Taiwan': 'TW', 'Thailand': 'TH', 'Turkey': 'TR',
+  'Ukraine': 'UA', 'United Arab Emirates': 'AE', 'United Kingdom': 'GB', 'United States': 'US',
+  'Vietnam': 'VN'
+}
+
+// Convert ISO 3166-1 alpha-2 country code to flag emoji
+export const getCountryFlag = countryName => {
+  const code = countryCodeMap[countryName]
+  if (!code) return ''
+  // Convert country code to flag emoji using regional indicator symbols
+  return String.fromCodePoint(
+    ...[...code].map(c => c.charCodeAt(0) + 127397)
+  )
+}
+
 export const Validators = {
   Key: {
     valid: k => !k || RX.KEY.test(k),

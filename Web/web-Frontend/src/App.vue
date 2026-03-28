@@ -5,6 +5,7 @@ import { useConfig } from '@/composables/useConfig'
 import { useUI } from '@/composables/useUI'
 import { useToast } from '@/composables/useToast'
 import { api } from '@/services/apiService'
+import { getCountryFlag } from '@/utils/utils'
 import ServerCard from '@/components/ServerCard.vue'
 import Toast from '@/components/Toast.vue'
 import Icon from '@/components/Icon.vue'
@@ -20,6 +21,8 @@ const sentinel = ref(null)
 const headerRef = ref(null)
 const headerHeight = ref(0)
 const dlLoading = ref(false)
+const countryDropdownOpen = ref(false)
+const countrySearchInput = ref(null)
 let obs = null
 let ro = null
 let ticking = false
@@ -27,6 +30,30 @@ let ticking = false
 const mainView = computed(() => !ui.modals.value.key && !ui.modals.value.custom)
 const emptyMsg = computed(() => srv.fCountry.value ? 'No servers match criteria.' : 'No servers loaded.')
 const dlLabel = computed(() => dlLoading.value ? 'Processing...' : srv.fCity.value ? 'Download City' : srv.fCountry.value ? 'Download Country' : 'Download All')
+const selectedCountryName = computed(() => {
+  const country = srv.countries.value.find(c => c.id === srv.fCountry.value)
+  return country ? country.name : 'All Countries'
+})
+
+const toggleCountryDropdown = () => {
+  countryDropdownOpen.value = !countryDropdownOpen.value
+  if (countryDropdownOpen.value) {
+    nextTick(() => countrySearchInput.value?.focus())
+  } else {
+    srv.fCountrySearch.value = ''
+  }
+}
+
+const selectCountry = (countryId) => {
+  srv.fCountry.value = countryId
+  countryDropdownOpen.value = false
+  srv.fCountrySearch.value = ''
+}
+
+const closeCountryDropdown = () => {
+  countryDropdownOpen.value = false
+  srv.fCountrySearch.value = ''
+}
 
 const onScroll = () => {
   if (!ticking) {
@@ -99,24 +126,26 @@ onMounted(async () => {
   window.scrollTo(0, 0)
   cfg.load()
   await srv.init()
-  
+
   obs = new IntersectionObserver(e => {
     if (e[0].isIntersecting) srv.loadMore()
   }, { rootMargin: '200px' })
-  
+
   ro = new ResizeObserver(() => {
     headerHeight.value = headerRef.value?.offsetHeight || 0
   })
   if (headerRef.value) ro.observe(headerRef.value)
-  
+
   observe()
   window.addEventListener('scroll', onScroll, { passive: true })
+  window.addEventListener('click', closeCountryDropdown)
 })
 
 onUnmounted(() => {
   obs?.disconnect()
   ro?.disconnect()
   window.removeEventListener('scroll', onScroll)
+  window.removeEventListener('click', closeCountryDropdown)
   ui.cleanQR()
 })
 
@@ -149,10 +178,30 @@ watch([srv.fCountry, srv.fCity], observe)
         <nav class="flex items-center gap-2 flex-1">
           <button @click="ui.toggle" class="shrink-0 p-2 flex items-center justify-center rounded hover:bg-nord-bg-hover"><Icon name="menu" class="w-5 h-5" /></button>
           <div class="flex-1 flex gap-2" @click="ui.close">
-            <select v-model="srv.fCountry.value" class="w-full bg-vscode-bg border border-vscode-active rounded px-2 py-1.5 text-sm sm:w-50">
-              <option value="">All Countries</option>
-              <option v-for="c in srv.countries.value" :key="c.id" :value="c.id">{{ c.name }}</option>
-            </select>
+            <div class="relative w-full sm:w-50">
+              <button @click.stop="toggleCountryDropdown" class="w-full bg-vscode-bg border border-vscode-active rounded px-2 py-1.5 text-sm text-left flex items-center justify-between">
+                <span class="flex items-center gap-1.5">
+                  <span v-if="srv.fCountry.value">{{ getCountryFlag(selectedCountryName) }}</span>
+                  <span>{{ selectedCountryName }}</span>
+                </span>
+                <Icon :name="countryDropdownOpen ? 'sortAsc' : 'sortDesc'" class="w-3 h-3 text-nord-text-secondary" />
+              </button>
+              <div v-if="countryDropdownOpen" class="absolute top-full left-0 right-0 mt-1 bg-vscode-bg border border-vscode-active rounded shadow-lg z-50 max-h-80 overflow-hidden flex flex-col">
+                <div class="p-2 border-b border-vscode-active">
+                  <input ref="countrySearchInput" v-model="srv.fCountrySearch.value" type="text" placeholder="Type to search..." class="w-full bg-vscode-header border border-vscode-active rounded px-2 py-1 text-sm focus:border-vscode-accent focus:outline-none" @click.stop>
+                </div>
+                <div class="overflow-y-auto">
+                  <button @click="selectCountry('')" class="w-full px-2 py-1.5 text-sm text-left hover:bg-nord-bg-hover flex items-center gap-1.5" :class="!srv.fCountry.value ? 'bg-nord-bg-active text-vscode-accent' : ''">
+                    <span>All Countries</span>
+                  </button>
+                  <button v-for="c in srv.filteredCountries.value" :key="c.id" @click="selectCountry(c.id)" class="w-full px-2 py-1.5 text-sm text-left hover:bg-nord-bg-hover flex items-center gap-1.5" :class="srv.fCountry.value === c.id ? 'bg-nord-bg-active text-vscode-accent' : ''">
+                    <span>{{ getCountryFlag(c.name) }}</span>
+                    <span>{{ c.name }}</span>
+                  </button>
+                  <div v-if="srv.filteredCountries.value.length === 0" class="px-2 py-4 text-sm text-center text-nord-text-secondary">No countries found</div>
+                </div>
+              </div>
+            </div>
             <div v-if="srv.fCountry.value" class="w-full sm:w-50">
               <select v-model="srv.fCity.value" :disabled="srv.cities.value.length < 2" class="w-full bg-vscode-bg border border-vscode-active rounded px-2 py-1.5 text-sm disabled:opacity-50">
                 <option v-if="srv.cities.value.length > 1" value="">All Cities</option>
