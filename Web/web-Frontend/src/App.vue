@@ -23,6 +23,9 @@ const headerHeight = ref(0)
 const dlLoading = ref(false)
 const countryDropdownOpen = ref(false)
 const countrySearchInput = ref(null)
+const countryToggleBtn = ref(null)
+const countryListRef = ref(null)
+const activeOptionIndex = ref(-1)
 let obs = null
 let ro = null
 let ticking = false
@@ -38,9 +41,11 @@ const selectedCountryName = computed(() => {
 const toggleCountryDropdown = () => {
   countryDropdownOpen.value = !countryDropdownOpen.value
   if (countryDropdownOpen.value) {
+    activeOptionIndex.value = -1
     nextTick(() => countrySearchInput.value?.focus())
   } else {
     srv.fCountrySearch.value = ''
+    activeOptionIndex.value = -1
   }
 }
 
@@ -48,6 +53,8 @@ const selectCountry = (countryId) => {
   srv.fCountry.value = countryId
   countryDropdownOpen.value = false
   srv.fCountrySearch.value = ''
+  activeOptionIndex.value = -1
+  nextTick(() => countryToggleBtn.value?.focus())
 }
 
 const closeCountryDropdown = () => {
@@ -56,6 +63,41 @@ const closeCountryDropdown = () => {
   }
   countryDropdownOpen.value = false
   srv.fCountrySearch.value = ''
+  activeOptionIndex.value = -1
+}
+
+const focusOption = (index) => {
+  if (!countryListRef.value) return
+  const buttons = countryListRef.value.querySelectorAll('[role="option"]')
+  if (index >= 0 && index < buttons.length) {
+    buttons[index].focus()
+    buttons[index].scrollIntoView({ block: 'nearest' })
+    activeOptionIndex.value = index
+  }
+}
+
+const handleCountryDropdownKeydown = (e) => {
+  if (!countryDropdownOpen.value) return
+  if (e.key === 'Escape') {
+    e.preventDefault()
+    closeCountryDropdown()
+    countryToggleBtn.value?.focus()
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    const buttons = countryListRef.value?.querySelectorAll('[role="option"]') ?? []
+    const next = activeOptionIndex.value + 1
+    if (next < buttons.length) focusOption(next)
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    if (activeOptionIndex.value === 0) {
+      activeOptionIndex.value = -1
+      countrySearchInput.value?.focus()
+    } else {
+      focusOption(activeOptionIndex.value - 1)
+    }
+  } else if (e.key === 'Tab') {
+    closeCountryDropdown()
+  }
 }
 
 const onScroll = () => {
@@ -153,6 +195,11 @@ onUnmounted(() => {
 })
 
 watch([srv.fCountry, srv.fCity], observe)
+watch(srv.fCountrySearch, () => { activeOptionIndex.value = -1 })
+
+const activeOptionId = computed(() =>
+  activeOptionIndex.value >= 0 ? `country-option-${activeOptionIndex.value}` : undefined
+)
 </script>
 
 <template>
@@ -181,8 +228,8 @@ watch([srv.fCountry, srv.fCity], observe)
         <nav class="flex items-center gap-2 flex-1">
           <button @click="ui.toggle" class="shrink-0 p-2 flex items-center justify-center rounded hover:bg-nord-bg-hover"><Icon name="menu" class="w-5 h-5" /></button>
           <div class="flex-1 flex gap-2" @click="ui.close">
-            <div class="relative w-full sm:w-50">
-              <button @click.stop="toggleCountryDropdown" class="w-full bg-vscode-bg border border-vscode-active rounded px-2 py-1.5 text-sm text-left flex items-center justify-between">
+            <div class="relative w-full sm:w-50" @keydown="handleCountryDropdownKeydown">
+              <button ref="countryToggleBtn" @click.stop="toggleCountryDropdown" aria-haspopup="listbox" :aria-expanded="countryDropdownOpen" aria-controls="country-listbox" class="w-full bg-vscode-bg border border-vscode-active rounded px-2 py-1.5 text-sm text-left flex items-center justify-between">
                 <span class="flex items-center gap-1.5">
                   <span v-if="srv.fCountry.value">{{ getCountryFlag(selectedCountryName) }}</span>
                   <span>{{ selectedCountryName }}</span>
@@ -191,13 +238,13 @@ watch([srv.fCountry, srv.fCity], observe)
               </button>
               <div v-if="countryDropdownOpen" class="absolute top-full left-0 right-0 mt-1 bg-vscode-bg border border-vscode-active rounded shadow-lg z-50 max-h-80 overflow-hidden flex flex-col">
                 <div class="p-2 border-b border-vscode-active">
-                  <input ref="countrySearchInput" v-model="srv.fCountrySearch.value" type="text" placeholder="Type to search..." class="w-full bg-vscode-header border border-vscode-active rounded px-2 py-1 text-sm focus:border-vscode-accent focus:outline-none" @click.stop>
+                  <input ref="countrySearchInput" v-model="srv.fCountrySearch.value" type="text" placeholder="Type to search..." role="combobox" aria-label="Search countries" aria-autocomplete="list" aria-controls="country-listbox" :aria-expanded="countryDropdownOpen" :aria-activedescendant="activeOptionId" class="w-full bg-vscode-header border border-vscode-active rounded px-2 py-1 text-sm focus:border-vscode-accent focus:outline-none" @click.stop>
                 </div>
-                <div class="overflow-y-auto">
-                  <button @click="selectCountry('')" class="w-full px-2 py-1.5 text-sm text-left hover:bg-nord-bg-hover flex items-center gap-1.5" :class="!srv.fCountry.value ? 'bg-nord-bg-active text-vscode-accent' : ''">
+                <div id="country-listbox" ref="countryListRef" role="listbox" aria-label="Countries" class="overflow-y-auto">
+                  <button id="country-option-0" role="option" :aria-selected="!srv.fCountry.value" @click="selectCountry('')" class="w-full px-2 py-1.5 text-sm text-left hover:bg-nord-bg-hover flex items-center gap-1.5 focus:outline-none focus:bg-nord-bg-hover" :class="!srv.fCountry.value ? 'bg-nord-bg-active text-vscode-accent' : ''">
                     <span>All Countries</span>
                   </button>
-                  <button v-for="c in srv.filteredCountries.value" :key="c.id" @click="selectCountry(c.id)" class="w-full px-2 py-1.5 text-sm text-left hover:bg-nord-bg-hover flex items-center gap-1.5" :class="srv.fCountry.value === c.id ? 'bg-nord-bg-active text-vscode-accent' : ''">
+                  <button v-for="(c, idx) in srv.filteredCountries.value" :key="c.id" :id="`country-option-${idx + 1}`" role="option" :aria-selected="srv.fCountry.value === c.id" @click="selectCountry(c.id)" class="w-full px-2 py-1.5 text-sm text-left hover:bg-nord-bg-hover flex items-center gap-1.5 focus:outline-none focus:bg-nord-bg-hover" :class="srv.fCountry.value === c.id ? 'bg-nord-bg-active text-vscode-accent' : ''">
                     <span>{{ getCountryFlag(c.name) }}</span>
                     <span>{{ c.name }}</span>
                   </button>
