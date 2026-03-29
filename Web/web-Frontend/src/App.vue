@@ -51,6 +51,9 @@ const selectCountry = (countryId) => {
 }
 
 const closeCountryDropdown = () => {
+  if (!countryDropdownOpen.value) {
+    return
+  }
   countryDropdownOpen.value = false
   srv.fCountrySearch.value = ''
 }
