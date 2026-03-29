@@ -99,14 +99,33 @@ const countryCodeMap = {
   'Zambia': 'ZM', 'Zimbabwe': 'ZW'
 }
 
-// Normalize country name for lookups (handles case, spacing, special characters)
+// Normalize country name for lookups (handles case, spacing, diacritics, and special characters)
 const normalizeCountryName = name => {
   if (!name) return ''
-  // Convert to title case and normalize common variations
-  return name.trim()
-    .split(/\s+/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+  // Normalize Unicode, strip diacritics, and remove most punctuation
+  const normalized = name
+    .normalize('NFD') // separate base chars and diacritics
+    .replace(/[\u0300-\u036f]/g, '') // strip combining diacritical marks
+    .replace(/[^\p{L}\p{N}\s-]+/gu, ' ') // keep letters, numbers, spaces, and hyphens
+    .trim()
+    .replace(/\s+/g, ' ')
+
+  // Convert to title case, including hyphenated words (e.g., "bosnia-herzegovina")
+  const titleCased = normalized
+    .split(' ')
+    .map(word =>
+      word
+        .split('-')
+        .map(part =>
+          part
+            ? part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+            : part
+        )
+        .join('-')
+    )
     .join(' ')
+
+  return titleCased
     .replace(/\bAnd\b/g, 'And')
     .replace(/\bOf\b/g, 'Of')
     .replace(/\bThe\b/g, 'The')
