@@ -10,8 +10,9 @@ export function useServers() {
   const sortOrd = shallowRef('asc')
   const fCountry = shallowRef('')
   const fCity = shallowRef('')
+  const fCountrySearch = shallowRef('')
   const limit = shallowRef(INC)
-  
+
   const countries = shallowRef([])
   const cityMap = shallowRef({})
 
@@ -38,6 +39,11 @@ export function useServers() {
   const visible = computed(() => filtered.value.slice(0, limit.value))
   const total = computed(() => filtered.value.length)
   const currentCities = computed(() => cityMap.value[fCountry.value] || [])
+  const filteredCountries = computed(() => {
+    if (!fCountrySearch.value) return countries.value
+    const search = fCountrySearch.value.toLowerCase()
+    return countries.value.filter(c => c.name.toLowerCase().includes(search))
+  })
 
   const reset = () => {
     limit.value = INC
@@ -117,7 +123,9 @@ export function useServers() {
     sortOrd,
     fCountry,
     fCity,
+    fCountrySearch,
     countries,
+    filteredCountries,
     cities: currentCities,
     total,
     loadMore: () => { if (!loading.value && limit.value < total.value) limit.value += INC },
