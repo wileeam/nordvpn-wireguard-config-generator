@@ -44,7 +44,7 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
     CGO_ENABLED=0 GOOS=linux go build -buildvcs=false -ldflags="-s -w" -trimpath -o server main.go
 
 # Stage 3: Create the final minimal image
-FROM alpine:3
+FROM alpine:3.23
 
 WORKDIR /app
 
