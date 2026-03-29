@@ -117,8 +117,10 @@ export const getCountryFlag = countryName => {
   const normalized = normalizeCountryName(countryName)
   const code = countryCodeMap[normalized]
   if (!code) {
-    // If not found, log for debugging (can help identify missing mappings)
-    console.warn(`Country code not found for: "${countryName}" (normalized: "${normalized}")`)
+    // If not found, log for debugging in development only (avoid noisy logs in production)
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV) {
+      console.warn(`Country code not found for: "${countryName}" (normalized: "${normalized}")`)
+    }
     return ''
   }
   // Convert country code to flag emoji using regional indicator symbols
