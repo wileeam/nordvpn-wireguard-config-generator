@@ -1,0 +1,43 @@
+# Frontend build artifacts
+web-Frontend/node_modules
+web-Frontend/dist
+web-Frontend/.vite
+web-Frontend/npm-debug.log*
+web-Frontend/yarn-debug.log*
+web-Frontend/yarn-error.log*
+web-Frontend/pnpm-debug.log*
+web-Frontend/.DS_Store
+
+# Backend build artifacts
+web-Backend/server
+web-Backend/tmp
+web-Backend/*.exe
+web-Backend/*.test
+web-Backend/*.out
+
+# Development and testing files
+**/.git
+**/.gitignore
+**/.gitattributes
+**/README.md
+**/LICENSE
+**/.vscode
+**/.idea
+**/*.md
+
+# OS files
+**/.DS_Store
+**/Thumbs.db
+
+# Docker files
+**/Dockerfile
+**/docker-compose*.yml
+**/.dockerignore
+
+# Temporary files
+**/tmp
+**/temp
+**/*.log
+**/*.swp
+**/*.swo
+**/*~

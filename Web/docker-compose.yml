@@ -1,0 +1,28 @@
+services:
+  nordgen-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nordgen-web:latest
+    container_name: nordgen-web
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    # Optional: Set environment variables if needed
+    # environment:
+    #   - APP_ENV=production
+    # Optional: Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 128M
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
