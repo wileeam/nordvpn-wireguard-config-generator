@@ -22,6 +22,35 @@ export const sanitizeName = s => s.toLowerCase()
   .replace(RX.MULTI, '_')
   .replace(RX.TRIM, '')
 
+// Normalize country name for lookups (handles case, spacing, diacritics, and special characters)
+const normalizeCountryName = name => {
+  if (!name) return ''
+  // Normalize Unicode, strip diacritics, and remove most punctuation
+  const normalized = name
+    .normalize('NFD') // separate base chars and diacritics
+    .replace(/[\u0300-\u036f]/g, '') // strip combining diacritical marks
+    .replace(/[^\p{L}\p{N}\s-]+/gu, ' ') // keep letters, numbers, spaces, and hyphens
+    .trim()
+    .replace(/\s+/g, ' ')
+
+  // Convert to title case, including hyphenated words (e.g., "bosnia-herzegovina")
+  const titleCased = normalized
+    .split(' ')
+    .map(word =>
+      word
+        .split('-')
+        .map(part =>
+          part
+            ? part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+            : part
+        )
+        .join('-')
+    )
+    .join(' ')
+
+  return titleCased
+}
+
 // Static mapping of country names to ISO 3166-1 alpha-2 codes for countries supported in the UI
 // Not guaranteed to cover all countries or future NordVPN locations; update this map as needed
 const countryCodeMap = {
@@ -99,42 +128,16 @@ const countryCodeMap = {
   'Zambia': 'ZM', 'Zimbabwe': 'ZW'
 }
 
-// Normalize country name for lookups (handles case, spacing, diacritics, and special characters)
-const normalizeCountryName = name => {
-  if (!name) return ''
-  // Normalize Unicode, strip diacritics, and remove most punctuation
-  const normalized = name
-    .normalize('NFD') // separate base chars and diacritics
-    .replace(/[\u0300-\u036f]/g, '') // strip combining diacritical marks
-    .replace(/[^\p{L}\p{N}\s-]+/gu, ' ') // keep letters, numbers, spaces, and hyphens
-    .trim()
-    .replace(/\s+/g, ' ')
-
-  // Convert to title case, including hyphenated words (e.g., "bosnia-herzegovina")
-  const titleCased = normalized
-    .split(' ')
-    .map(word =>
-      word
-        .split('-')
-        .map(part =>
-          part
-            ? part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
-            : part
-        )
-        .join('-')
-    )
-    .join(' ')
-
-  return titleCased
-    .replace(/\bAnd\b/g, 'And')
-    .replace(/\bOf\b/g, 'Of')
-    .replace(/\bThe\b/g, 'The')
-}
+// Pre-normalized lookup map: keys are run through normalizeCountryName so lookups always
+// match regardless of how entries are stored in countryCodeMap or how input is formatted
+const normalizedCountryCodeMap = Object.fromEntries(
+  Object.entries(countryCodeMap).map(([k, v]) => [normalizeCountryName(k), v])
+)
 
 // Convert ISO 3166-1 alpha-2 country code to flag emoji
 export const getCountryFlag = countryName => {
   const normalized = normalizeCountryName(countryName)
-  const code = countryCodeMap[normalized]
+  const code = normalizedCountryCodeMap[normalized]
   if (!code) {
     // If not found, log for debugging in development only (avoid noisy logs in production)
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV) {
