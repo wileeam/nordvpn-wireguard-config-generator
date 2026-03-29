@@ -22,8 +22,8 @@ export const sanitizeName = s => s.toLowerCase()
   .replace(RX.MULTI, '_')
   .replace(RX.TRIM, '')
 
-// Comprehensive ISO 3166-1 alpha-2 country code mapping for ALL countries worldwide
-// This ensures any country that NordVPN adds in the future will automatically display flags
+// Static mapping of country names to ISO 3166-1 alpha-2 codes for countries supported in the UI
+// Not guaranteed to cover all countries or future NordVPN locations; update this map as needed
 const countryCodeMap = {
   // A
   'Afghanistan': 'AF', 'Albania': 'AL', 'Algeria': 'DZ', 'Andorra': 'AD', 'Angola': 'AO',
