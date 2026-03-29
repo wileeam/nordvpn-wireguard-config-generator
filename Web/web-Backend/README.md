@@ -42,6 +42,10 @@ CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -trimpath -o server main.go
 ./server
 ```
 
+## Docker Deployment
+
+For Docker deployment instructions (docker-compose, manual build/run, reverse proxy configuration), see the [Web application README](../README.md).
+
 ## Architecture
 
 - **Core Store**: Maintains a thread-safe in-memory cache of NordVPN servers, refreshed every 5 minutes. It also handles static asset serving with pre-compressed Brotli support and ETag caching.
